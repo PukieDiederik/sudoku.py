@@ -55,6 +55,12 @@ class Sudoku:
             for x in range(9):
                 print(self.value[y*9+x], end="")
             print("")
+
+    def getSudokuString(self):
+        s = ""
+        for i in range(81):
+            s += str(self.value[i])
+        return s
             
 
 #%% this will solve the sudoku (takes in a sudoku as input)
