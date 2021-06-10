@@ -22,10 +22,12 @@ class Sudoku:
     def __deepcopy__(self, memo):
         return type(self)(deepcopy(self.value))
 
-    def checkIfValidAt(self, pos, value):
+    def checkIfValidAt(self, pos : int, value: int) -> bool:
         if(pos > 80): print("position out of range")
-        elif(value > 9): print("value out of range")
         else:
+            #check if number is more than 9
+            if (value > 9): return False
+
             #if the number is in the same row
             horizontalOffset = pos % 9
             horizontalBase = pos - horizontalOffset
@@ -69,7 +71,7 @@ def solveSudoku(sudoku: Sudoku):
     currentPos = 0
     direction = 1 #1 forward, -1 backward
     #loop until finished
-    while(0 >= currentPos < 81):
+    while(0 <= currentPos < 81):
         if(sudoku.value[currentPos] != 0): currentPos += direction
         else:
             direction = 1
@@ -77,7 +79,6 @@ def solveSudoku(sudoku: Sudoku):
             unsolvedSudoku.value[currentPos] += 1
             while not (unsolvedSudoku.checkIfValidAt(currentPos, unsolvedSudoku.value[currentPos])):
                 unsolvedSudoku.value[currentPos] += 1
-                print("value: " + str(unsolvedSudoku.value[currentPos]))
                 if (unsolvedSudoku.value[currentPos] > 9):
                     unsolvedSudoku.value[currentPos] = 0
                     direction = -1
