@@ -101,7 +101,7 @@ def getSudokusFromFile(path : str, maxLines : int = 0) -> list:
         values = file.readlines()
         sudokus = [Sudoku(x) for x in (s.rstrip("\n\r") for s in values) if(re.match("^\d{81}$", x))]
     else:
-        sudokus = [Sudoku(x) for x in (s.rstrip("\n\r") for s in (file.readline() for i in range(100))) if(x and re.match("^\d{81}$", x))]
+        sudokus = [Sudoku(x) for x in (s.rstrip("\n\r") for s in (file.readline() for i in range(maxLines))) if(x and re.match("^\d{81}$", x))]
     return sudokus
 
 # %%
