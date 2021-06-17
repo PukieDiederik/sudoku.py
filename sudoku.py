@@ -1,5 +1,8 @@
 #%% imports
 from copy import deepcopy
+import sys
+import os
+import re
 
 #%% the sudoku itself
 class Sudoku:
@@ -90,3 +93,33 @@ def solveSudoku(sudoku: Sudoku):
 
     return unsolvedSudoku
 # %%
+if (__name__ == "__main__"):
+    if(len(sys.argv) > 1):
+        maxSudokus = 100     #this is for large files to prevent it taking 3 days to solve all sudokus
+        printType = "regular" # options: pretty (using printSudoku()), regular (sudokus on 2 lines (input and solved)), compact (all on 1 line)
+        multiThreaded = False # if the program will be multithreaded
+
+        #TODO: parse options
+
+        #the first argument will always be the sudoku (or a path to it)
+        if(re.match("^\d{81}$", sys.argv[1])):
+            sudoku = Sudoku(sys.argv[1])
+            solved = solveSudoku(sudoku)
+            print("input sudoku:  " + sys.argv[1])
+            print("solved sudoku: " + solved.getSudokuString())
+        elif(os.path.isfile(sys.argv[1])):
+            file = open(sys.argv[1], "r")
+            for i in range(maxSudokus):
+                sudoku = file.readline().rstrip("\n")
+                if not(sudoku):
+                    break
+                elif not(re.match("^\d{81}$", sudoku)):
+                    print(sudoku + " is not a valid sudoku, skipping...")
+                else:
+                    print(f"[{i + 1}/{maxSudokus}] {sudoku},{solveSudoku(Sudoku(sudoku)).getSudokuString()}")
+
+        else:
+            print("Sudoku is either: not a valid sudoku OR not a valid path")
+        
+    else:
+        print("Not enough arguments")
