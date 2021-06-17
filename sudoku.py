@@ -92,6 +92,18 @@ def solveSudoku(sudoku: Sudoku):
                 currentPos += 1
 
     return unsolvedSudoku
+
+# %%
+def getSudokusFromFile(path : str, maxLines : int = 0) -> list:
+    file = open(path)
+    sudokus = []
+    if(maxLines == 0):
+        values = file.readlines()
+        sudokus = [Sudoku(x) for x in (s.rstrip("\n\r") for s in values) if(re.match("^\d{81}$", x))]
+    else:
+        sudokus = [Sudoku(x) for x in (s.rstrip("\n\r") for s in (file.readline() for i in range(100))) if(x and re.match("^\d{81}$", x))]
+    return sudokus
+
 # %%
 if (__name__ == "__main__"):
     if(len(sys.argv) > 1):
@@ -108,15 +120,9 @@ if (__name__ == "__main__"):
             print("input sudoku:  " + sys.argv[1])
             print("solved sudoku: " + solved.getSudokuString())
         elif(os.path.isfile(sys.argv[1])):
-            file = open(sys.argv[1], "r")
-            for i in range(maxSudokus):
-                sudoku = file.readline().rstrip("\n")
-                if not(sudoku):
-                    break
-                elif not(re.match("^\d{81}$", sudoku)):
-                    print(sudoku + " is not a valid sudoku, skipping...")
-                else:
-                    print(f"[{i + 1}/{maxSudokus}] {sudoku},{solveSudoku(Sudoku(sudoku)).getSudokuString()}")
+            sudokus = getSudokusFromFile(sys.argv[1], maxSudokus)
+            for x in sudokus:
+                print(f"{x.getSudokuString()},{solveSudoku(x).getSudokuString()}")
 
         else:
             print("Sudoku is either: not a valid sudoku OR not a valid path")
