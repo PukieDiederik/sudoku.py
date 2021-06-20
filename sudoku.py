@@ -45,7 +45,7 @@ class Sudoku:
             #if the number is in the same section (3x3)
             # vertical section + horizontal section
             sectionStart = (pos - (pos % 27)) + ((pos % 9) - (pos % 3))
-            for y in range(sectionStart, 27, 9):
+            for y in range(sectionStart, sectionStart + 27, 9):
                 for x in range(3):
                     if(self.value[x + y] == value and x + y != pos): return False
 
