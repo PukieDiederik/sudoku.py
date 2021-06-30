@@ -110,33 +110,57 @@ def getSudokusFromFile(path : str, maxLines : int = 0) -> list:
 if (__name__ == "__main__"):
     if(len(sys.argv) > 1):
         maxSudokus = 10000     #this is for large files to prevent it taking 3 days to solve all sudokus
-        printType = "regular" # options: pretty (using printSudoku()), regular (sudokus on 2 lines (input and solved)), compact (all on 1 line)
+        printType = "compact" # options: pretty (using printSudoku()), compact (all on 1 line), none
         multiThreaded = False # if the program will be multithreaded
+        showId = False #show the id of the solved sudoku
+        isTimed = False #time the program
 
-        #TODO: parse options
-
-        #the first argument will always be the sudoku (or a path to it)
-        if(re.match("^\d{81}$", sys.argv[1])):
-            sudoku = Sudoku(sys.argv[1])
-            solved = solveSudoku(sudoku)
-            print("input sudoku:  " + sys.argv[1])
-            print("solved sudoku: " + solved.getSudokuString())
-        elif(os.path.isfile(sys.argv[1])):
-            def __mapfunction__(sud):
-                return (sud, solveSudoku(sud))
-
-            startTime = time.time()
-            sudokus = getSudokusFromFile(sys.argv[1], maxSudokus)
-            pool = mp.Pool(12)
-            solved = pool.map(__mapfunction__, sudokus)
-            endTime = time.time()
-            # for x in solved:
-            #     print(x[0].getSudokuString() + "," + x[1].getSudokuString())
-            print("finished in: " + str(endTime - startTime) + " sec")
-
+        #if the help menu is called:
+        if(len(sys.argv) >= 2 and sys.argv[1] == "--help"):
+            print("python3 sudoku <sudoku>     - Use an 81 character string of numbers where 0's represent empty places")
+            print("python3 sudoku <file path>  - Input a file where each line of the file is an 81 character string of numbers where 0's represent empty places")
+            print("")
+            print("extra options: ")
+            print("--maxSudokus=<amount>                    - amount of sudokus it will solve (only applicable to files)")
+            print("--printType=<type>                       - the way it will display solved sudokus, possible options:")
+            print("  DEFAULT compact - [input Sudoku],[solved Sudoku]")
+            print("          pretty  - will print the input and solved sudoku as a 9x9 grid")
+            print("          none    - It wont print out the sudoku, mainly used for performance testing")
+            print("--showId                                 - will show the id of the solved sudoku ([n/ out of])")
+            print("--timer                                  - times the program to see how fast it runs")
+            print("--multiprocessing[=<amount of threads>]  - Uses multiprocessing to speed up the program")
 
         else:
-            print("Sudoku is either: not a valid sudoku OR not a valid path")
+            #TODO:
+            #if more options than just the sudoku are given
+            if(len(sys.argv) > 2):
+                for arg in sys.argv[2:]:
+                    if(arg.startswith("--")):
+                        print("not implemented")
+                    else:
+                        print(arg + " is not a valid option")
+
+            #the first argument will always be the sudoku (or a path to it)
+            if(re.match("^\d{81}$", sys.argv[1])):
+                sudoku = Sudoku(sys.argv[1])
+                solved = solveSudoku(sudoku)
+                print("input sudoku:  " + sys.argv[1])
+                print("solved sudoku: " + solved.getSudokuString())
+
+            elif(os.path.isfile(sys.argv[1])):
+                def __mapfunction__(sud):
+                    return (sud, solveSudoku(sud))
+
+                startTime = time.time()
+                sudokus = getSudokusFromFile(sys.argv[1], maxSudokus)
+                pool = mp.Pool(12)
+                solved = pool.map(__mapfunction__, sudokus)
+                endTime = time.time()
+                # for x in solved:
+                #     print(x[0].getSudokuString() + "," + x[1].getSudokuString())
+                print("finished in: " + str(endTime - startTime) + " sec")
+            else:
+                print("Sudoku is either: not a valid sudoku OR not a valid path")
         
     else:
         print("Not enough arguments")
