@@ -3,6 +3,8 @@ from copy import deepcopy
 import sys
 import os
 import re
+import time #for testing speed of the program
+import multiprocessing as mp
 
 #%% the sudoku itself
 class Sudoku:
@@ -107,7 +109,7 @@ def getSudokusFromFile(path : str, maxLines : int = 0) -> list:
 # %%
 if (__name__ == "__main__"):
     if(len(sys.argv) > 1):
-        maxSudokus = 100     #this is for large files to prevent it taking 3 days to solve all sudokus
+        maxSudokus = 10000     #this is for large files to prevent it taking 3 days to solve all sudokus
         printType = "regular" # options: pretty (using printSudoku()), regular (sudokus on 2 lines (input and solved)), compact (all on 1 line)
         multiThreaded = False # if the program will be multithreaded
 
@@ -120,9 +122,18 @@ if (__name__ == "__main__"):
             print("input sudoku:  " + sys.argv[1])
             print("solved sudoku: " + solved.getSudokuString())
         elif(os.path.isfile(sys.argv[1])):
+            def __mapfunction__(sud):
+                return (sud, solveSudoku(sud))
+
+            startTime = time.time()
             sudokus = getSudokusFromFile(sys.argv[1], maxSudokus)
-            for x in sudokus:
-                print(f"{x.getSudokuString()},{solveSudoku(x).getSudokuString()}")
+            pool = mp.Pool(12)
+            solved = pool.map(__mapfunction__, sudokus)
+            endTime = time.time()
+            # for x in solved:
+            #     print(x[0].getSudokuString() + "," + x[1].getSudokuString())
+            print("finished in: " + str(endTime - startTime) + " sec")
+
 
         else:
             print("Sudoku is either: not a valid sudoku OR not a valid path")
