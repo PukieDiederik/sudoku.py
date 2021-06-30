@@ -1,10 +1,13 @@
 #%% imports
 from copy import deepcopy
+from genericpath import isfile
 import sys
 import os
 import re
 import time #for testing speed of the program
+import math
 import multiprocessing as mp
+import argparse
 
 #%% the sudoku itself
 class Sudoku:
@@ -99,7 +102,7 @@ def solveSudoku(sudoku: Sudoku):
 def getSudokusFromFile(path : str, maxLines : int = 0) -> list:
     file = open(path)
     sudokus = []
-    if(maxLines == 0):
+    if(maxLines <= 0):
         values = file.readlines()
         sudokus = [Sudoku(x) for x in (s.rstrip("\n\r") for s in values) if(re.match("^\d{81}$", x))]
     else:
@@ -108,59 +111,37 @@ def getSudokusFromFile(path : str, maxLines : int = 0) -> list:
 
 # %%
 if (__name__ == "__main__"):
-    if(len(sys.argv) > 1):
-        maxSudokus = 10000     #this is for large files to prevent it taking 3 days to solve all sudokus
-        printType = "compact" # options: pretty (using printSudoku()), compact (all on 1 line), none
-        multiThreaded = False # if the program will be multithreaded
-        showId = False #show the id of the solved sudoku
-        isTimed = False #time the program
+    #parsing arguments
+    argParser = argparse.ArgumentParser()
+    argParser.add_argument("-s", help="input as an 81 digit long string where 0 represents an empty spot, seperate each sudoku with a space", type=str, dest="sudokus", nargs="*")
+    argParser.add_argument("-f", help="input as a file with sudokus, seperate multiple files with spaces", type=str, dest="files", nargs="*")
 
-        #if the help menu is called:
-        if(len(sys.argv) >= 2 and sys.argv[1] == "--help"):
-            print("python3 sudoku <sudoku>     - Use an 81 character string of numbers where 0's represent empty places")
-            print("python3 sudoku <file path>  - Input a file where each line of the file is an 81 character string of numbers where 0's represent empty places")
-            print("")
-            print("extra options: ")
-            print("--maxSudokus=<amount>                    - amount of sudokus it will solve (only applicable to files)")
-            print("--printType=<type>                       - the way it will display solved sudokus, possible options:")
-            print("  DEFAULT compact - [input Sudoku],[solved Sudoku]")
-            print("          pretty  - will print the input and solved sudoku as a 9x9 grid")
-            print("          none    - It wont print out the sudoku, mainly used for performance testing")
-            print("--showId                                 - will show the id of the solved sudoku ([n/ out of])")
-            print("--timer                                  - times the program to see how fast it runs")
-            print("--multiprocessing[=<amount of threads>]  - Uses multiprocessing to speed up the program")
+    argParser.add_argument("-m", "--maxSudokus", help="max amount of sudokus, DEFAULT: 100", type=int, default=100)
+    argParser.add_argument("-p", "--printType" , help="the way it prints the answer, possible options: compact, pretty, none", type=str, default="compact")
+    argParser.add_argument("--multiThreaded", help="uses multithreading, thread count can be given as an additional argument", nargs="?", default=False, const=math.floor(os.cpu_count()/2), type=int)
+    argParser.add_argument("-t", "--timed", help="prints statistics on how fast the program is", action="store_true")
+    args = argParser.parse_args()
 
-        else:
-            #TODO:
-            #if more options than just the sudoku are given
-            if(len(sys.argv) > 2):
-                for arg in sys.argv[2:]:
-                    if(arg.startswith("--")):
-                        print("not implemented")
-                    else:
-                        print(arg + " is not a valid option")
+    sudokus = []
+    if (args.sudokus):
+        sudokus = [Sudoku(sudoku) for sudoku in args.sudokus if(re.match("^\d{81}$", sudoku))]
+    if(len(sudokus) > args.maxSudokus):
+        sudokus = sudokus[:args.maxSudokus]
+    
+    if(args.files):
+        for path in args.files:
+            if(os.path.isfile(path)):
+                sudokus.extend(getSudokusFromFile(path, args.maxSudokus - len(sudokus)))
+            else: print(f"\'{path}\' isnt a valid file path")
 
-            #the first argument will always be the sudoku (or a path to it)
-            if(re.match("^\d{81}$", sys.argv[1])):
-                sudoku = Sudoku(sys.argv[1])
-                solved = solveSudoku(sudoku)
-                print("input sudoku:  " + sys.argv[1])
-                print("solved sudoku: " + solved.getSudokuString())
+    def __mapfunction__(sud):
+        return (sud, solveSudoku(sud))
 
-            elif(os.path.isfile(sys.argv[1])):
-                def __mapfunction__(sud):
-                    return (sud, solveSudoku(sud))
-
-                startTime = time.time()
-                sudokus = getSudokusFromFile(sys.argv[1], maxSudokus)
-                pool = mp.Pool(12)
-                solved = pool.map(__mapfunction__, sudokus)
-                endTime = time.time()
-                # for x in solved:
-                #     print(x[0].getSudokuString() + "," + x[1].getSudokuString())
-                print("finished in: " + str(endTime - startTime) + " sec")
-            else:
-                print("Sudoku is either: not a valid sudoku OR not a valid path")
-        
-    else:
-        print("Not enough arguments")
+    startTime = time.time()
+    pool = mp.Pool(12)
+    solved = pool.map(__mapfunction__, sudokus)
+    endTime = time.time()
+    for x in solved:
+        print(x[0].getSudokuString() + "," + x[1].getSudokuString())
+    print("finished in: " + str(endTime - startTime) + " sec")
+# %%
