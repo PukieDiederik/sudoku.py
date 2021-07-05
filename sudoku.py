@@ -59,19 +59,31 @@ class Sudoku:
 
     def getValueAt(self, posx, posy):
         return self.value[posy * 9 + posx]
-    
-    def printSudoku(self):
-        for y in range(9):
-            for x in range(9):
-                print(self.value[y*9+x], end="")
-            print("")
 
-    def getSudokuString(self):
-        s = ""
-        for i in range(81):
-            s += str(self.value[i])
-        return s
-            
+    #printing Sudoku functions
+    def prettyPrint(unsolved, solved):
+        print("  unsolved:        solved:")
+        for y1 in range(3):
+            print("╬═══╬═══╬═══╬   ╬═══╬═══╬═══╬")
+            for y2 in range(3):
+                pos = ((y1 * 3) + y2) * 9
+                #print unsolved
+                print("║", end="")
+                for x in range(9):
+                    print(str(unsolved.value[pos + x]), end="")
+                    if ((x+1) % 3 == 0): print("║", end="")
+                print("   ", end="")
+                
+                #print solved
+                print("║", end="")
+                for x in range(9):
+                    print(str(solved.value[pos + x]), end="")
+                    if ((x+1) % 3 == 0): print("║", end="")
+                print("")
+        print("╬═══╬═══╬═══╬   ╬═══╬═══╬═══╬")
+
+    def compactPrint(unsolved, solved):
+        print("{},{}".format("".join(str(i) for i in unsolved.value), "".join(str(i) for i in solved.value)))
 
 #%% this will solve the sudoku (takes in a sudoku as input)
 def solveSudoku(sudoku: Sudoku):
@@ -136,37 +148,11 @@ if (__name__ == "__main__"):
                 sudokus.extend(getSudokusFromFile(path, args.maxSudokus - len(sudokus)))
             else: print(f"\'{path}\' isnt a valid file path")
 
-    #check and implement printType
-    def prettyPrint(unsolved, solved):
-        print("  unsolved:        solved:")
-        for y1 in range(3):
-            print("╬═══╬═══╬═══╬   ╬═══╬═══╬═══╬")
-            for y2 in range(3):
-                pos = ((y1 * 3) + y2) * 9
-                #print unsolved
-                print("║", end="")
-                for x in range(9):
-                    print(str(unsolved.value[pos + x]), end="")
-                    if ((x+1) % 3 == 0): print("║", end="")
-                print("   ", end="")
-                
-                #print solved
-                print("║", end="")
-                for x in range(9):
-                    print(str(solved.value[pos + x]), end="")
-                    if ((x+1) % 3 == 0): print("║", end="")
-                print("")
-                #print(f"║{us.value[pos+0]}{us.value[pos+1]}{us.value[pos+2]}║{us.value[pos+3]}{us.value[pos+4]}{us.value[pos+5]}║{us.value[pos+6]}{us.value[pos+7]}{us.value[pos+8]}║   ", end="\n")
-
-        print("╬═══╬═══╬═══╬   ╬═══╬═══╬═══╬")
-    def compactPrint(unsolved, solved):
-        print(f"{unsolved.getSudokuString()},{solved.getSudokuString()}")
-
     printFunction = None
     if(args.printType == "compact"):
-        printFunction = compactPrint
+        printFunction = Sudoku.compactPrint
     elif(args.printType == "pretty"):
-        printFunction = prettyPrint
+        printFunction = Sudoku.prettyPrint
     elif(args.printType == "none"):
         printFunction = None
     else:
