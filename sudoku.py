@@ -173,5 +173,5 @@ if (__name__ == "__main__"):
         if(printFunction != None):
             for x in solved:
                 printFunction(x[0],x[1], False)
-    print("finished in: " + str(endTime - startTime) + " sec")
+    if(args.timed): print("finished in: " + str(endTime - startTime) + " sec")
 # %%
