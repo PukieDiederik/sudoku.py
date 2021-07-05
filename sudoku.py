@@ -119,9 +119,11 @@ if (__name__ == "__main__"):
     argParser.add_argument("-m", "--maxSudokus", help="max amount of sudokus, DEFAULT: 100", type=int, default=100)
     argParser.add_argument("-p", "--printType" , help="the way it prints the answer, possible options: compact, pretty, none", type=str, default="compact")
     argParser.add_argument("--multiThreaded", help="uses multithreading, thread count can be given as an additional argument", nargs="?", default=False, const=math.floor(os.cpu_count()/2), type=int)
-    argParser.add_argument("-t", "--timed", help="prints statistics on how fast the program is", action="store_true")
+    argParser.add_argument("-t", "--timed", help="prints statistics on how fast the program is", action="store_true", default=False)
+    argParser.add_argument("-i", "--showId", help="shows the id of the sudoku when printing", dest="showId", action="store_true", default=False)
     args = argParser.parse_args()
 
+    #load in the sudokus
     sudokus = []
     if (args.sudokus):
         sudokus = [Sudoku(sudoku) for sudoku in args.sudokus if(re.match("^\d{81}$", sudoku))]
@@ -134,6 +136,42 @@ if (__name__ == "__main__"):
                 sudokus.extend(getSudokusFromFile(path, args.maxSudokus - len(sudokus)))
             else: print(f"\'{path}\' isnt a valid file path")
 
+    #check and implement printType
+    def prettyPrint(unsolved, solved):
+        print("  unsolved:        solved:")
+        for y1 in range(3):
+            print("╬═══╬═══╬═══╬   ╬═══╬═══╬═══╬")
+            for y2 in range(3):
+                pos = ((y1 * 3) + y2) * 9
+                #print unsolved
+                print("║", end="")
+                for x in range(9):
+                    print(str(unsolved.value[pos + x]), end="")
+                    if ((x+1) % 3 == 0): print("║", end="")
+                print("   ", end="")
+                
+                #print solved
+                print("║", end="")
+                for x in range(9):
+                    print(str(solved.value[pos + x]), end="")
+                    if ((x+1) % 3 == 0): print("║", end="")
+                print("")
+                #print(f"║{us.value[pos+0]}{us.value[pos+1]}{us.value[pos+2]}║{us.value[pos+3]}{us.value[pos+4]}{us.value[pos+5]}║{us.value[pos+6]}{us.value[pos+7]}{us.value[pos+8]}║   ", end="\n")
+
+        print("╬═══╬═══╬═══╬   ╬═══╬═══╬═══╬")
+    def compactPrint(unsolved, solved):
+        print(f"{unsolved.getSudokuString()},{solved.getSudokuString()}")
+
+    printFunction = None
+    if(args.printType == "compact"):
+        printFunction = compactPrint
+    elif(args.printType == "pretty"):
+        printFunction = prettyPrint
+    elif(args.printType == "none"):
+        printFunction = None
+    else:
+        print(f"\'{args.printType}\' is not a valid printType")
+
     def __mapfunction__(sud):
         return (sud, solveSudoku(sud))
 
@@ -141,7 +179,8 @@ if (__name__ == "__main__"):
     pool = mp.Pool(12)
     solved = pool.map(__mapfunction__, sudokus)
     endTime = time.time()
-    for x in solved:
-        print(x[0].getSudokuString() + "," + x[1].getSudokuString())
+    if(printFunction != None):
+        for x in solved:
+            printFunction(x[0],x[1])
     print("finished in: " + str(endTime - startTime) + " sec")
 # %%
