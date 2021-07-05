@@ -61,7 +61,8 @@ class Sudoku:
         return self.value[posy * 9 + posx]
 
     #printing Sudoku functions
-    def prettyPrint(unsolved, solved):
+    def prettyPrint(unsolved, solved, showId ,id = 0, maxSudokus = 0):
+        if(showId): print(f"current sudoku: [{id}/{maxSudokus}]")
         print("  unsolved:        solved:")
         for y1 in range(3):
             print("╬═══╬═══╬═══╬   ╬═══╬═══╬═══╬")
@@ -82,8 +83,8 @@ class Sudoku:
                 print("")
         print("╬═══╬═══╬═══╬   ╬═══╬═══╬═══╬")
 
-    def compactPrint(unsolved, solved):
-        print("{},{}".format("".join(str(i) for i in unsolved.value), "".join(str(i) for i in solved.value)))
+    def compactPrint(unsolved, solved, showId ,id = 0, maxSudokus = 0):
+        print("{}{},{}".format(f"[{id}/{maxSudokus}]" if showId else "", "".join(str(i) for i in unsolved.value), "".join(str(i) for i in solved.value)))
 
 #%% this will solve the sudoku (takes in a sudoku as input)
 def solveSudoku(sudoku: Sudoku):
@@ -165,8 +166,12 @@ if (__name__ == "__main__"):
     pool = mp.Pool(12)
     solved = pool.map(__mapfunction__, sudokus)
     endTime = time.time()
-    if(printFunction != None):
-        for x in solved:
-            printFunction(x[0],x[1])
+    if(args.showId):
+        for x in range(len(solved)):
+            printFunction(solved[x][0],solved[x][1], True, x + 1, len(solved))
+    else:
+        if(printFunction != None):
+            for x in solved:
+                printFunction(x[0],x[1], False)
     print("finished in: " + str(endTime - startTime) + " sec")
 # %%
