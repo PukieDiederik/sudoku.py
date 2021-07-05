@@ -1,7 +1,5 @@
 #%% imports
 from copy import deepcopy
-from genericpath import isfile
-import sys
 import os
 import re
 import time #for testing speed of the program
@@ -159,12 +157,13 @@ if (__name__ == "__main__"):
     else:
         print(f"\'{args.printType}\' is not a valid printType")
 
-    def __mapfunction__(sud):
-        return (sud, solveSudoku(sud))
 
     solved = []
     startTime = time.time()
     if(args.multiThreaded):
+        def __mapfunction__(sud):
+            return (sud, solveSudoku(sud))
+            
         pool = mp.Pool(args.multiThreaded)
         solved = pool.map(__mapfunction__, sudokus)
     else:
