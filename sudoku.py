@@ -162,10 +162,15 @@ if (__name__ == "__main__"):
     def __mapfunction__(sud):
         return (sud, solveSudoku(sud))
 
+    solved = []
     startTime = time.time()
-    pool = mp.Pool(12)
-    solved = pool.map(__mapfunction__, sudokus)
+    if(args.multiThreaded):
+        pool = mp.Pool(args.multiThreaded)
+        solved = pool.map(__mapfunction__, sudokus)
+    else:
+        solved = [(s, solveSudoku(s)) for s in sudokus]
     endTime = time.time()
+
     if(args.showId):
         for x in range(len(solved)):
             printFunction(solved[x][0],solved[x][1], True, x + 1, len(solved))
