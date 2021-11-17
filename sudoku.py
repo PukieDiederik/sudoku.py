@@ -91,21 +91,20 @@ def solveSudoku(sudoku: Sudoku):
     direction = 1 #1 forward, -1 backward
     #loop until finished
     while(0 <= currentPos < 81):
-        if(sudoku.value[currentPos] != 0): currentPos += direction
+        if(sudoku.value[currentPos] != 0): currentPos += direction # skip if there is a constant number
         else:
             direction = 1
             #search for the next valid position
             unsolvedSudoku.value[currentPos] += 1
-            while not (unsolvedSudoku.checkIfValidAt(currentPos, unsolvedSudoku.value[currentPos])):
+            while not (unsolvedSudoku.checkIfValidAt(currentPos, unsolvedSudoku.value[currentPos])) and unsolvedSudoku.value[currentPos] <=9:
                 unsolvedSudoku.value[currentPos] += 1
-                if (unsolvedSudoku.value[currentPos] > 9):
-                    unsolvedSudoku.value[currentPos] = 0
-                    direction = -1
-                    currentPos -= 1
-                    break
 
-            if (direction == 1):
+            if (unsolvedSudoku.value[currentPos] <= 9):
                 currentPos += 1
+            else:
+                unsolvedSudoku.value[currentPos] = 0
+                direction = -1
+                currentPos -= 1
 
     return unsolvedSudoku
 
